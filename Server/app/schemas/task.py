@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional
 from datetime import datetime
 
@@ -29,10 +29,10 @@ class TaskUpdate(BaseModel):
     due_date: Optional[datetime] = None
 
 class TaskListResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     tasks: list[TaskResponse]
     total: int
 
 
-    class Config:
-        orm_mode = True
-
+    

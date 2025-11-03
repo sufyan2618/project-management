@@ -28,8 +28,8 @@
                                 Hello,
                             </p>
                             
-                            <p style="margin: 0 0 30px; color: #555555; font-size: 16px; line-height: 1.6;">
-                                A task status has been updated by <strong>{{ user_name }}</strong>. Here's what changed:
+                            <p style="margin: 0 0 30px; color: #555555; font-size: 16px; line-height: 1.8;">
+                                <strong style="color: #667eea;">{{ user_name }}</strong> has updated the task <strong>"{{ task_name }}"</strong> to <strong style="color: #27ae60;">{{ new_status }}</strong>.
                             </p>
                             
                             <!-- Status Update Card -->
@@ -40,35 +40,41 @@
                                         <!-- Task Name -->
                                         <table role="presentation" style="width: 100%; margin-bottom: 20px;">
                                             <tr>
-                                                <td style="color: #999; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Task Name</td>
+                                                <td style="color: #999; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">📋 Task Name</td>
                                             </tr>
                                             <tr>
-                                                <td style="color: #333; font-size: 18px; font-weight: 600; margin-top: 5px;">{{ task_name }}</td>
+                                                <td style="color: #333; font-size: 18px; font-weight: 600; margin-top: 8px;">{{ task_name }}</td>
                                             </tr>
                                         </table>
                                         
                                         <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 15px 0;" />
                                         
-                                        <!-- Status Timeline -->
+                                        <!-- Status Update Display -->
+                                        <table role="presentation" style="width: 100%; margin-bottom: 15px;">
+                                            <tr>
+                                                <td style="color: #999; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Status Changed</td>
+                                            </tr>
+                                        </table>
+                                        
                                         <table role="presentation" style="width: 100%;">
                                             <tr>
                                                 <!-- Before Status -->
-                                                <td style="width: 45%; vertical-align: top;">
-                                                    <p style="margin: 0 0 8px; color: #999; font-size: 11px; font-weight: 600; text-transform: uppercase;">Previous Status</p>
-                                                    <div style="display: inline-block; padding: 8px 12px; background-color: #ffe8e8; color: #d63031; border-radius: 4px; font-size: 13px; font-weight: 600;">
+                                                <td style="width: 40%; vertical-align: middle;">
+                                                    <p style="margin: 0 0 8px; color: #999; font-size: 11px; font-weight: 600; text-transform: uppercase;">From</p>
+                                                    <div style="display: inline-block; padding: 10px 14px; background-color: #fff3cd; color: #856404; border-radius: 4px; font-size: 13px; font-weight: 600;">
                                                         {{ previous_status }}
                                                     </div>
                                                 </td>
                                                 
                                                 <!-- Arrow -->
-                                                <td style="width: 10%; text-align: center;">
-                                                    <p style="margin: 20px 0; font-size: 20px; color: #ddd;">→</p>
+                                                <td style="width: 20%; text-align: center; vertical-align: middle;">
+                                                    <p style="margin: 0; font-size: 24px; color: #ccc; font-weight: 300;">→</p>
                                                 </td>
                                                 
                                                 <!-- New Status -->
-                                                <td style="width: 45%; vertical-align: top;">
-                                                    <p style="margin: 0 0 8px; color: #999; font-size: 11px; font-weight: 600; text-transform: uppercase;">New Status</p>
-                                                    <div style="display: inline-block; padding: 8px 12px; background-color: #e8f8e8; color: #27ae60; border-radius: 4px; font-size: 13px; font-weight: 600;">
+                                                <td style="width: 40%; vertical-align: middle;">
+                                                    <p style="margin: 0 0 8px; color: #999; font-size: 11px; font-weight: 600; text-transform: uppercase;">To</p>
+                                                    <div style="display: inline-block; padding: 10px 14px; background-color: #d4edda; color: #155724; border-radius: 4px; font-size: 13px; font-weight: 600;">
                                                         {{ new_status }}
                                                     </div>
                                                 </td>
@@ -77,12 +83,22 @@
                                         
                                         <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 15px 0;" />
                                         
-                                        <!-- Additional Info -->
+                                        <!-- Update Metadata -->
                                         <table role="presentation" style="width: 100%;">
                                             <tr>
-                                                <td style="color: #666; font-size: 14px; line-height: 1.8;">
-                                                    <strong>Updated By:</strong> <span style="color: #333;">{{ user_name }}</span><br>
-                                                    <strong>Updated At:</strong> <span style="color: #333;">{{ timestamp }}</span>
+                                                <td>
+                                                    <table role="presentation" style="width: 100%;">
+                                                        <tr>
+                                                            <td style="color: #666; font-size: 14px; line-height: 1.8; width: 50%;">
+                                                                <strong style="color: #333;">👤 Updated By:</strong><br>
+                                                                <span style="color: #667eea;">{{ user_name }}</span>
+                                                            </td>
+                                                            <td style="color: #666; font-size: 14px; line-height: 1.8; text-align: right;">
+                                                                <strong style="color: #333;">⏰ Updated At:</strong><br>
+                                                                <span style="color: #667eea;">{{ timestamp }}</span>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
                                         </table>
@@ -90,30 +106,35 @@
                                 </tr>
                             </table>
                             
-                            <!-- Status Badge Legend -->
-                            <table role="presentation" style="width: 100%; margin-bottom: 30px;">
+                            <!-- Quick Status Reference -->
+                            <table role="presentation" style="width: 100%; margin-bottom: 30px; background-color: #f8f9fa; border-radius: 6px; padding: 15px;">
                                 <tr>
-                                    <td style="background-color: #f8f9fa; border-radius: 6px; padding: 15px;">
-                                        <p style="margin: 0 0 10px; color: #666; font-size: 13px; font-weight: 600;">Status Meanings:</p>
+                                    <td>
+                                        <p style="margin: 0 0 12px; color: #333; font-size: 13px; font-weight: 600;">💡 Task Status Reference:</p>
                                         <table role="presentation" style="width: 100%;">
                                             <tr>
-                                                <td style="padding: 5px 0; font-size: 13px; color: #666;">
-                                                    🟡 <strong>Not Started</strong> - Task hasn't begun yet
+                                                <td style="padding: 6px 0; font-size: 13px; color: #555;">
+                                                    🟡 <strong>Not Started</strong> — Task is ready to begin
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="padding: 5px 0; font-size: 13px; color: #666;">
-                                                    🟠 <strong>In Progress</strong> - Work is currently underway
+                                                <td style="padding: 6px 0; font-size: 13px; color: #555;">
+                                                    🟠 <strong>In Progress</strong> — Work is actively being done
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="padding: 5px 0; font-size: 13px; color: #666;">
-                                                    🟢 <strong>Completed</strong> - Task has been finished
+                                                <td style="padding: 6px 0; font-size: 13px; color: #555;">
+                                                    🟢 <strong>Completed</strong> — Task has been successfully finished
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="padding: 5px 0; font-size: 13px; color: #666;">
-                                                    🔴 <strong>On Hold</strong> - Task is temporarily paused
+                                                <td style="padding: 6px 0; font-size: 13px; color: #555;">
+                                                    🔴 <strong>On Hold</strong> — Task is temporarily paused
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; font-size: 13px; color: #555;">
+                                                    ⚫ <strong>Cancelled</strong> — Task has been cancelled
                                                 </td>
                                             </tr>
                                         </table>
@@ -125,7 +146,7 @@
                             <table role="presentation" style="margin: 0 auto; margin-bottom: 30px;">
                                 <tr>
                                     <td style="text-align: center;">
-                                        <a href="http://localhost:3000/tasks/{{ task_id }}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                                        <a href="http://localhost:3000/tasks/{{ task_id }}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; transition: transform 0.2s;">
                                             View Task Details
                                         </a>
                                     </td>
@@ -133,16 +154,16 @@
                             </table>
                             
                             <!-- Info Message -->
-                            <table role="presentation" style="width: 100%; background-color: #f0f7ff; border-radius: 6px;">
+                            <table role="presentation" style="width: 100%; background-color: #e7f3ff; border-left: 4px solid #667eea; border-radius: 4px;">
                                 <tr>
-                                    <td style="padding: 15px; color: #0066cc; font-size: 13px; line-height: 1.6;">
-                                        ℹ️ <strong>Note:</strong> You received this notification because you are the project creator. Monitor task progress regularly to ensure your project stays on track.
+                                    <td style="padding: 15px; color: #0051ba; font-size: 13px; line-height: 1.6;">
+                                        <strong>ℹ️ Notification Note:</strong> You're receiving this because you're the project creator. Keep track of task updates to ensure your project stays on schedule.
                                     </td>
                                 </tr>
                             </table>
                             
                             <p style="margin: 30px 0 0; color: #777; font-size: 14px; line-height: 1.6;">
-                                If you need to discuss this update or have concerns, please reach out to the team member who made the change.
+                                Questions about this change? Reach out directly to <strong>{{ user_name }}</strong> or check the task details for more information.
                             </p>
                         </td>
                     </tr>

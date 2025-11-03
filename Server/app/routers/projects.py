@@ -9,9 +9,9 @@ from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, P
 from typing import List
 
 router = APIRouter(prefix="/api/project", tags=["projects"])
-@router.post("/", response_model=ProjectResponse)
-#only admin can create projects
-@Depends(RoleChecker(allowed_roles=["admin"]))
+
+
+@router.post("/", response_model=ProjectResponse, dependencies=[Depends(RoleChecker(["admin"]))])
 def create_project(
     project: ProjectCreate,
     db: Session = Depends(get_db)
@@ -28,6 +28,7 @@ def create_project(
     return new_project
 
 
+#get all projects with pagination and filtration
 @router.get("/", response_model=APIResponse[ProjectListResponse])
 def list_projects( db: Session = Depends(get_db)):
     projects = db.query(Project).all()
@@ -54,9 +55,7 @@ def get_project(
 
 
 #update project
-@router.patch("/{project_id}", response_model=ProjectResponse)
-#only admin can update projects
-@Depends(RoleChecker(allowed_roles=["admin"]))
+@router.patch("/{project_id}", response_model=ProjectResponse, dependencies=[Depends(RoleChecker(["admin"]))])
 def update_project(
     project_id: int,
     project_update: ProjectUpdate,
@@ -74,9 +73,7 @@ def update_project(
     db.refresh(project)
     return project
 
-@router.delete("/{project_id}", response_model=APIResponse[None])
-#only admin can delete projects
-@Depends(RoleChecker(allowed_roles=["admin"]))
+@router.delete("/{project_id}", response_model=APIResponse[None], dependencies=[Depends(RoleChecker(["admin"]))])
 def delete_project(
     project_id: int,
     db: Session = Depends(get_db)

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.schemas.common import APIResponse
 from app.core.database import get_db
 from app.models.task import Task
@@ -84,16 +85,8 @@ def update_task(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    # if status is being updated, send email notification to project creator
-    if task_update.status and task_update.status != task.status:
-        user = db.query(User).filter(User.id == task.assigned_to).first()
-        background_tasks.add_task(
-            EmailService.send_task_status_update_email,
-            email=user.email,
-            user_name=user.full_name,
-            task_name=task.title,
-            status=task_update.status
-        )
+   
+
 
     for var, value in vars(task_update).items():
         if value is not None:
@@ -101,6 +94,23 @@ def update_task(
 
     db.commit()
     db.refresh(task)
+
+    timestamp = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+
+ # if status is being updated, send email notification to project creator
+    if task_update.status and task_update.status != task.status:
+        user = db.query(User).filter(User.id == task.assigned_to).first()
+        background_tasks.add_task(
+            EmailService.send_task_status_update_email,
+            email=user.email,
+            user_name=user.full_name,
+            task_name=task.title,
+            previous_status=task.status,
+            new_status=task_update.status,
+            task_id=task.id,
+            timestamp=timestamp
+        )
+
     return task
 
 
