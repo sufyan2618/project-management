@@ -1,0 +1,38 @@
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from datetime import datetime
+
+class TaskCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    assigned_to: str
+    project_id: int
+    due_date: Optional[str] = None
+
+class TaskResponse(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    assigned_to: EmailStr
+    project_id: int
+    status: str
+    due_date: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    assigned_to: Optional[EmailStr] = None
+    project_id: Optional[int] = None
+    status: Optional[str] = None
+    due_date: Optional[datetime] = None
+
+class TaskListResponse(BaseModel):
+    tasks: list[TaskResponse]
+    total: int
+
+
+    class Config:
+        orm_mode = True
+

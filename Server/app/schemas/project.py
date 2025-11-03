@@ -2,6 +2,8 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 
+from app.schemas.task import TaskResponse
+
 class ProjectCreate(BaseModel):
     title: str
     description: Optional[str] = None
@@ -25,6 +27,7 @@ class ProjectUpdate(BaseModel):
 class ProjectListResponse(BaseModel):
     projects: list[ProjectResponse]
     total: int
+    tasks: list[TaskResponse]
 
     class Config:
         orm_mode = True

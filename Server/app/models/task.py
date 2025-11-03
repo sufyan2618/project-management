@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
 
-class Project(Base):
+class Task(Base):
     __tablename__ = "projects"
 
     id = Column(Integer, primary_key=True, index=True)
