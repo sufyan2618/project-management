@@ -7,13 +7,13 @@ from app.schemas.task import TaskResponse
 class ProjectCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    created_by: EmailStr
+    created_by: int
 
 class ProjectResponse(BaseModel):
     id: int
     title: str
     description: Optional[str] = None
-    created_by: EmailStr
+    created_by: int
     created_at: datetime
     updated_at: datetime
 

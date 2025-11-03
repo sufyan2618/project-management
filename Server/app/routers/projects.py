@@ -48,7 +48,7 @@ def get_project(
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    elif project.created_by != current_user.email and current_user.role != "admin":
+    elif project.created_by != current_user.id and current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to access this project")
     return project
 

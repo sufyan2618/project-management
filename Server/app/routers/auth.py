@@ -4,7 +4,7 @@ from app.schemas.user import UserResponse, UserLogin, UserRegister
 from app.core.database import get_db
 from app.core.security import verify_password, create_access_token, hash_password
 from app.schemas.common import APIResponse
-from app.services.email_service import send_email
+from app.services.email_service import EmailService
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.user import User
 from app.dependencies import get_current_user
@@ -24,7 +24,7 @@ async def register_user(user: UserRegister, background_tasks: BackgroundTasks, d
     db.refresh(new_user)
 
     # Send welcome email in the background
-    background_tasks.add_task(send_email, email_to=user.email, user_name=user.full_name)
+    background_tasks.add_task(EmailService.send_welcome_email, email=user.email, user_name=user.full_name)
 
     return {
         "success": True,

@@ -5,7 +5,7 @@ from datetime import datetime
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    assigned_to: str
+    assigned_to: int
     project_id: int
     due_date: Optional[str] = None
 
@@ -13,7 +13,7 @@ class TaskResponse(BaseModel):
     id: int
     title: str
     description: Optional[str] = None
-    assigned_to: EmailStr
+    assigned_to: int
     project_id: int
     status: str
     due_date: Optional[datetime] = None
@@ -23,7 +23,7 @@ class TaskResponse(BaseModel):
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
-    assigned_to: Optional[EmailStr] = None
+    assigned_to: Optional[int] = None
     project_id: Optional[int] = None
     status: Optional[str] = None
     due_date: Optional[datetime] = None
