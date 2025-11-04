@@ -18,5 +18,4 @@ class User(Base):
     role = Column(String, default="user")
 
     projects = relationship("Project", back_populates="creator")
-    created_tasks = relationship("Task", foreign_keys="Task.created_by", back_populates="creator")  # Tasks they created
     assigned_tasks = relationship("Task", foreign_keys="Task.assigned_to", back_populates="assignee")  # Tasks assigned to them

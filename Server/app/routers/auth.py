@@ -5,25 +5,32 @@ from app.core.database import get_db
 from app.core.security import verify_password, create_access_token, hash_password
 from app.schemas.common import APIResponse
 from app.services.email_service import EmailService
+from app.core.logger import get_logger
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.user import User
 from app.dependencies import get_current_user
 from datetime import timedelta
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+logger = get_logger(__name__)
 
-@router.post("/register", response_model=APIResponse[UserResponse])
+@router.post("/register", response_model=APIResponse[UserResponse], response_model_exclude_none=True)
 async def register_user(user: UserRegister, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    logger.info(f"Registration attempt for email: {user.email}")
+    
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
+        logger.warning(f"Registration failed - email already exists: {user.email}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+    
     hashed_password = hash_password(user.password)
     new_user = User(full_name=user.full_name, email=user.email, hashed_password=hashed_password)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    # Send welcome email in the background
+    logger.info(f"User registered successfully: {new_user.id} - {user.email}")
+
     background_tasks.add_task(EmailService.send_welcome_email, email=user.email, user_name=user.full_name)
 
     return {
@@ -34,11 +41,18 @@ async def register_user(user: UserRegister, background_tasks: BackgroundTasks, d
 
 @router.post("/login", response_model=APIResponse[UserResponse])
 def login_user(user: UserLogin, db: Session = Depends(get_db)):
+    logger.info(f"Login attempt for email: {user.email}")
+    
     db_user = db.query(User).filter(User.email == user.email).first()
     if not db_user or not verify_password(user.password, db_user.hashed_password):
+        logger.warning(f"Failed login attempt for email: {user.email}")
         raise HTTPException( status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    
     access_token_expires = timedelta(minutes=600)
     access_token = create_access_token(data={"user_id": db_user.id}, expires_delta=access_token_expires)
+    
+    logger.info(f"User logged in successfully: {db_user.id} - {user.email}")
+    
     return {
         "success": True,
         "data": UserResponse.model_validate(db_user),
@@ -46,22 +60,26 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         "access_token": access_token,
     }
 
-@router.get("/me", response_model=APIResponse[UserResponse])
+@router.get("/me", response_model=APIResponse[UserResponse], response_model_exclude_none=True)
 def read_current_user(current_user: User = Depends(get_current_user)):
+    logger.info(f"User {current_user.id} fetching their profile")
+    
     return {
         "success": True,
         "data": UserResponse.model_validate(current_user)
     }
 
-@router.post("/token")  # Standard OAuth2 endpoint
+@router.post("/token")
 async def login_for_swagger(
     form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    """This endpoint is for Swagger UI authorization"""
+    logger.info(f"Swagger OAuth2 login attempt for: {form_data.username}")
+    
     db = next(get_db())
     db_user = db.query(User).filter(User.email == form_data.username).first()
     
     if not db_user or not verify_password(form_data.password, db_user.hashed_password):
+        logger.warning(f"Failed Swagger OAuth2 login for: {form_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -73,6 +91,8 @@ async def login_for_swagger(
         data={"user_id": db_user.id},
         expires_delta=access_token_expires
     )
+    
+    logger.info(f"Swagger OAuth2 login successful for user: {db_user.id}")
     
     return {
         "access_token": access_token,

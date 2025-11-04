@@ -10,6 +10,8 @@ class TaskCreate(BaseModel):
     due_date: Optional[str] = None
 
 class TaskResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     title: str
     description: Optional[str] = None
@@ -29,10 +31,11 @@ class TaskUpdate(BaseModel):
     due_date: Optional[datetime] = None
 
 class TaskListResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
     tasks: list[TaskResponse]
     total: int
+    page: int
+    size: int
+    total_pages: int
 
 
     
