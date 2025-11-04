@@ -51,6 +51,39 @@ def create_task(
     return new_task
 
 
+@router.get("/assigned", response_model=APIResponse[TaskListResponse], response_model_exclude_none=True)
+def get_assigned_tasks(
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
+    status: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    logger.info(f"User {current_user.id} fetching their assigned tasks - page: {page}, size: {size}, status: {status}")
+    
+    query = db.query(Task).filter(Task.assigned_to == current_user.id)
+    
+    if status:
+        query = query.filter(Task.status == status)
+    
+    total = query.count()
+    total_pages = math.ceil(total / size)
+    
+    tasks = query.offset((page - 1) * size).limit(size).all()
+    
+    logger.info(f"Retrieved {len(tasks)} assigned tasks out of {total} total for user {current_user.id}")
+    
+    return APIResponse[TaskListResponse](
+        success=True,
+        data=TaskListResponse(
+            tasks=tasks,
+            total=total,
+            page=page,
+            size=size,
+            total_pages=total_pages
+        )
+    )
+
 @router.get("/", response_model=APIResponse[TaskListResponse], response_model_exclude_none=True)
 def list_tasks(
     page: int = Query(1, ge=1),
@@ -148,7 +181,8 @@ def update_task(
 
     if task_update.status and task_update.status != task.status:
         logger.info(f"Task {task_id} status changed from {task.status} to {task_update.status}")
-        user = db.query(User).filter(User.id == task.assigned_to).first()
+        project = db.query(Project).filter(Project.id == task.project_id).first()
+        user = db.query(User).filter(User.id == project.created_by).first()
         background_tasks.add_task(
             EmailService.send_task_status_update_email,
             email=user.email,
