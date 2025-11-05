@@ -1,18 +1,20 @@
 from pydantic_settings import BaseSettings
+from typing import Optional
 
 class Settings(BaseSettings):
     DATABASE_URL: str
     SECRET_KEY: str
-    ALGORITHM: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    MAIL_USERNAME: str
-    MAIL_PASSWORD: str
-    CLIENT_URL: str
-    MAIL_FROM: str
-    MAIL_SERVER: str
-    MAIL_PORT: int
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 600
+    MAIL_USERNAME: Optional[str] = None
+    MAIL_PASSWORD: Optional[str] = None
+    CLIENT_URL: str = "http://localhost:5173"
+    MAIL_FROM: Optional[str] = None
+    MAIL_SERVER: str = "smtp.gmail.com"
+    MAIL_PORT: int = 587
 
     class Config:
         env_file = ".env"
+        case_sensitive = True
 
 settings = Settings()

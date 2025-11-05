@@ -1,0 +1,49 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: taskflow-db
+    env: python
+    plan: free
+    # Database will be created automatically by Render
+    
+  # FastAPI Backend
+  - type: web
+    name: taskflow-backend
+    env: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /docs
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: taskflow-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+        sync: false
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 600
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
+      - key: CLIENT_URL
+        value: https://taskflow-frontend.onrender.com
+
+databases:
+  - name: taskflow-db
+    databaseName: taskflow_db
+    user: taskflow_user
+    plan: free
+
