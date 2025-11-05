@@ -130,7 +130,7 @@ Before you begin, ensure you have:
    Name:           taskflow-frontend
    Branch:         main (or master)
    Root Directory: client
-   Build Command:  npm install && npm run build
+   Build Command:  npm install --legacy-peer-deps && npm run build
    Publish Dir:    dist
    ```
 
