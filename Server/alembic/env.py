@@ -3,10 +3,10 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 
-# ✅ Import your existing config
+
 from app.core.config import settings
 
-# ✅ Import all models
+
 from app.core.database import Base
 from app.models.user import User
 from app.models.project import Project  
@@ -15,7 +15,7 @@ from app.models.task import Task
 # Alembic Config object
 config = context.config
 
-# ✅ Use your existing DATABASE_URL from settings.py
+
 config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
 
 # Logging config
