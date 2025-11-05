@@ -3,7 +3,7 @@ services:
     name: taskflow-frontend
     env: static
     plan: free
-    buildCommand: yarn install && yarn build
+    buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     headers:
       - path: /*
