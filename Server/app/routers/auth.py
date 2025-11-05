@@ -113,3 +113,44 @@ async def login_for_swagger(
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+# TEMPORARY ENDPOINT - Remove after creating first admin
+@router.post("/make-first-admin")
+def make_first_admin(db: Session = Depends(get_db)):
+    """
+    Temporary endpoint to make the first registered user an admin.
+    This endpoint will only work if there are no admins yet.
+    DELETE THIS ENDPOINT after creating your first admin!
+    """
+    logger.info("Attempting to create first admin user")
+    
+    # Check if any admin exists
+    existing_admin = db.query(User).filter(User.role == "admin").first()
+    if existing_admin:
+        logger.warning("Admin already exists, rejecting request")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin user already exists. This endpoint is disabled."
+        )
+    
+    # Get the first user (oldest by created_at)
+    first_user = db.query(User).order_by(User.created_at).first()
+    
+    if not first_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No users found. Please register first."
+        )
+    
+    # Make them admin
+    first_user.role = "admin"
+    db.commit()
+    db.refresh(first_user)
+    
+    logger.info(f"First admin created: {first_user.email}")
+    
+    return {
+        "success": True,
+        "message": f"User {first_user.email} is now an admin!",
+        "data": UserResponse.model_validate(first_user)
+    }
