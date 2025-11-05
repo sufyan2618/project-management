@@ -6,10 +6,13 @@ import sys
 import getpass
 import re
 from sqlalchemy.orm import Session
-from app.core.database import SessionLocal, engine
-from app.models.user import User
+from app.core.database import SessionLocal, engine, Base
 from app.core.security import hash_password
-from app.core.database import Base
+
+# Import all models to ensure relationships are properly initialized
+from app.models.user import User
+from app.models.project import Project
+from app.models.task import Task
 
 
 def validate_email(email: str) -> bool:
