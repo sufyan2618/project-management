@@ -16,6 +16,11 @@ export const authService = {
     return response.data;
   },
 
+  getAllUsers: async () => {
+    const response = await api.get('/api/auth/users');
+    return response.data;
+  },
+
   logout: () => {
     return Promise.resolve();
   },

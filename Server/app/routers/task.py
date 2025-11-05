@@ -170,6 +170,8 @@ def update_task(
         logger.warning(f"Task with ID {task_id} not found for update")
         raise HTTPException(status_code=404, detail="Task not found")
 
+    old_status = task.status
+    
     for var, value in vars(task_update).items():
         if value is not None:
             setattr(task, var, value)
@@ -179,20 +181,27 @@ def update_task(
 
     timestamp = datetime.now().strftime("%B %d, %Y at %I:%M %p")
 
-    if task_update.status and task_update.status != task.status:
-        logger.info(f"Task {task_id} status changed from {task.status} to {task_update.status}")
+    if task_update.status and task_update.status != old_status:
+        logger.info(f"Task {task_id} status changed from {old_status} to {task_update.status}")
         project = db.query(Project).filter(Project.id == task.project_id).first()
-        user = db.query(User).filter(User.id == project.created_by).first()
-        background_tasks.add_task(
-            EmailService.send_task_status_update_email,
-            email=user.email,
-            user_name=user.full_name,
-            task_name=task.title,
-            previous_status=task.status,
-            new_status=task_update.status,
-            task_id=task.id,
-            timestamp=timestamp
-        )
+        if project:
+            user = db.query(User).filter(User.id == project.created_by).first()
+            if user:
+                background_tasks.add_task(
+                    EmailService.send_task_status_update_email,
+                    email=user.email,
+                    user_name=user.full_name,
+                    task_name=task.title,
+                    previous_status=old_status,
+                    new_status=task_update.status,
+                    task_id=task.id,
+                    timestamp=timestamp
+                )
+                logger.info(f"Email notification queued for project creator {user.email}")
+            else:
+                logger.warning(f"Project creator user not found for project {project.id}")
+        else:
+            logger.warning(f"Project not found for task {task_id}")
 
     logger.info(f"Task {task_id} updated successfully")
     return task

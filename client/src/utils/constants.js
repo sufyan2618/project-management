@@ -22,5 +22,6 @@ export const QUERY_KEYS = {
   TASKS: 'tasks',
   TASK_DETAIL: 'task-detail',
   USER_PROFILE: 'user-profile',
+  USERS: 'users',
 };
 

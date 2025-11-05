@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '../../services/taskService';
 import { projectService } from '../../services/projectService';
+import { authService } from '../../services/authService';
 import Modal from '../ui/Modal';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
@@ -25,6 +26,11 @@ const TaskModal = ({ isOpen, onClose, task = null, projectId = null }) => {
   const { data: projectsData } = useQuery({
     queryKey: [QUERY_KEYS.PROJECTS],
     queryFn: () => projectService.getProjects({ size: 100 }),
+  });
+
+  const { data: usersData } = useQuery({
+    queryKey: [QUERY_KEYS.USERS],
+    queryFn: () => authService.getAllUsers(),
   });
 
   useEffect(() => {
@@ -99,6 +105,11 @@ const TaskModal = ({ isOpen, onClose, task = null, projectId = null }) => {
     label: project.title,
   })) || [];
 
+  const userOptions = usersData?.data?.map(user => ({
+    value: user.id,
+    label: `${user.full_name} (${user.role === 'admin' ? 'Admin' : 'User'}) - ${user.email}`,
+  })) || [];
+
   return (
     <Modal
       isOpen={isOpen}
@@ -154,13 +165,15 @@ const TaskModal = ({ isOpen, onClose, task = null, projectId = null }) => {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Input
+          <Select
             label="Assigned To (User ID)"
             name="assigned_to"
-            type="number"
             value={formData.assigned_to}
             onChange={handleChange}
-            placeholder="Enter user ID"
+            options={[
+              { value: '', label: 'Select User' },
+              ...userOptions,
+            ]}
             required
           />
 

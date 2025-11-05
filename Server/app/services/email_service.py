@@ -58,7 +58,7 @@ class EmailService:
 
 # on task status change, notify project creator about update
     @staticmethod
-    async def send_task_status_update_email(email: str, user_name: str, task_name: str, status: str, previous_status: str, new_status: str, task_id: int, timestamp: str):
+    async def send_task_status_update_email(email: str, user_name: str, task_name: str, previous_status: str, new_status: str, task_id: int, timestamp: str):
         """Send task status update email"""
         template = env.get_template('task-status-update.html')
         html = template.render(

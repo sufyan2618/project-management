@@ -69,6 +69,21 @@ def read_current_user(current_user: User = Depends(get_current_user)):
         "data": UserResponse.model_validate(current_user)
     }
 
+@router.get("/users", response_model=APIResponse[list[UserResponse]], response_model_exclude_none=True)
+def get_all_users(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    logger.info(f"User {current_user.id} fetching all users")
+    
+    users = db.query(User).filter(User.is_active == True).all()
+    
+    return {
+        "success": True,
+        "data": [UserResponse.model_validate(user) for user in users],
+        "message": "Users fetched successfully"
+    }
+
 @router.post("/token")
 async def login_for_swagger(
     form_data: OAuth2PasswordRequestForm = Depends()

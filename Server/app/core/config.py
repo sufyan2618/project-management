@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
+    CLIENT_URL: str
     MAIL_FROM: str
     MAIL_SERVER: str
     MAIL_PORT: int
