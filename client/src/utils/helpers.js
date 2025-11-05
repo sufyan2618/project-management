@@ -45,3 +45,33 @@ export const truncate = (str, length = 50) => {
   return str.substring(0, length) + '...';
 };
 
+
+export const getErrorMessage = (error, defaultMessage = 'An error occurred') => {
+  const detail = error?.response?.data?.detail;
+  
+  if (!detail) {
+    return defaultMessage;
+  }
+  
+  if (Array.isArray(detail)) {
+    const firstError = detail[0];
+    if (firstError?.msg) {
+      let message = firstError.msg;
+      
+      if (message.startsWith('Value error, ')) {
+        message = message.replace('Value error, ', '');
+      }
+      
+      return message;
+    }
+    return 'Validation failed. Please check your input.';
+  }
+  
+  if (typeof detail === 'string') {
+    return detail;
+  }
+  
+
+  return defaultMessage;
+};
+

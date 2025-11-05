@@ -27,9 +27,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      storage.clear();
-      window.location.href = '/login';
-      toast.error('Session expired. Please login again.');
+      const currentPath = window.location.pathname;
+      const isAuthPage = currentPath === '/login' || currentPath === '/register';
+      
+      if (!isAuthPage) {
+        storage.clear();
+        window.location.href = '/login';
+        toast.error('Session expired. Please login again.');
+      }
     }
     return Promise.reject(error);
   }

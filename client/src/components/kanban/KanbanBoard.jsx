@@ -5,6 +5,7 @@ import { taskService } from '../../services/taskService';
 import KanbanColumn from './KanbanColumn';
 import TaskModal from '../tasks/TaskModal';
 import { QUERY_KEYS, TASK_STATUS } from '../../utils/constants';
+import { getErrorMessage } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const KanbanBoard = ({ tasks = [], projectId = null }) => {
@@ -41,7 +42,8 @@ const KanbanBoard = ({ tasks = [], projectId = null }) => {
       toast.success('Task status updated!');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.detail || 'Failed to update task');
+      const errorMessage = getErrorMessage(error, 'Failed to update task');
+      toast.error(errorMessage);
       setColumns((prev) => ({ ...prev }));
     },
   });

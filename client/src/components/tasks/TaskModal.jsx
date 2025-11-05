@@ -8,6 +8,7 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
 import { QUERY_KEYS, TASK_STATUS } from '../../utils/constants';
+import { getErrorMessage } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const TaskModal = ({ isOpen, onClose, task = null, projectId = null }) => {
@@ -57,7 +58,8 @@ const TaskModal = ({ isOpen, onClose, task = null, projectId = null }) => {
       onClose();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.detail || 'Failed to create task');
+      const errorMessage = getErrorMessage(error, 'Failed to create task');
+      toast.error(errorMessage);
     },
   });
 
@@ -70,7 +72,8 @@ const TaskModal = ({ isOpen, onClose, task = null, projectId = null }) => {
       onClose();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.detail || 'Failed to update task');
+      const errorMessage = getErrorMessage(error, 'Failed to update task');
+      toast.error(errorMessage);
     },
   });
 

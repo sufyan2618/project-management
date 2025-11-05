@@ -5,6 +5,7 @@ import Modal from '../ui/Modal';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import { QUERY_KEYS } from '../../utils/constants';
+import { getErrorMessage } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const ProjectModal = ({ isOpen, onClose, project = null }) => {
@@ -35,7 +36,8 @@ const ProjectModal = ({ isOpen, onClose, project = null }) => {
       onClose();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.detail || 'Failed to create project');
+      const errorMessage = getErrorMessage(error, 'Failed to create project');
+      toast.error(errorMessage);
     },
   });
 
@@ -48,7 +50,8 @@ const ProjectModal = ({ isOpen, onClose, project = null }) => {
       onClose();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.detail || 'Failed to update project');
+      const errorMessage = getErrorMessage(error, 'Failed to update project');
+      toast.error(errorMessage);
     },
   });
 

@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { authService } from '../../services/authService';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import { getErrorMessage } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const Register = () => {
@@ -23,7 +24,8 @@ const Register = () => {
       navigate('/login');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      const errorMessage = getErrorMessage(error, 'Registration failed. Please try again.');
+      toast.error(errorMessage);
     },
   });
 

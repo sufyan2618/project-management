@@ -6,6 +6,7 @@ import { authService } from '../../services/authService';
 import { setCredentials } from '../../store/slices/authSlice';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import { getErrorMessage } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -28,7 +29,8 @@ const Login = () => {
       navigate('/dashboard');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      const errorMessage = getErrorMessage(error, 'Login failed. Please try again.');
+      toast.error(errorMessage);
     },
   });
 
@@ -91,12 +93,6 @@ const Login = () => {
               </Link>
             </p>
           </div>
-        </div>
-
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Demo Credentials:</p>
-          <p className="mt-1">Admin: admin@example.com / password</p>
-          <p>User: user@example.com / password</p>
         </div>
       </div>
     </div>
