@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../../services/authService';
@@ -16,7 +16,16 @@ const Login = () => {
   });
   
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (location.state?.message) {
+      toast.success(location.state.message);
+      // Clear the message from location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const loginMutation = useMutation({
     mutationFn: authService.login,
@@ -81,6 +90,15 @@ const Login = () => {
               Sign In
             </Button>
           </form>
+
+          <div className="mt-4 text-center">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-primary-600 hover:text-primary-700"
+            >
+              Forgot your password?
+            </Link>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">

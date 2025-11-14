@@ -9,7 +9,8 @@ import toast from 'react-hot-toast';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    full_name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -19,9 +20,9 @@ const Register = () => {
 
   const registerMutation = useMutation({
     mutationFn: authService.register,
-    onSuccess: () => {
-      toast.success('Registration successful! Please login.');
-      navigate('/login');
+    onSuccess: (data) => {
+      toast.success('Registration successful! Please verify your email.');
+      navigate('/verify-email', { state: { email: formData.email } });
     },
     onError: (error) => {
       const errorMessage = getErrorMessage(error, 'Registration failed. Please try again.');
@@ -56,12 +57,22 @@ const Register = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
-              label="Full Name"
+              label="First Name"
               type="text"
-              name="full_name"
-              value={formData.full_name}
+              name="first_name"
+              value={formData.first_name}
               onChange={handleChange}
-              placeholder="John Doe"
+              placeholder="John"
+              required
+            />
+
+            <Input
+              label="Last Name"
+              type="text"
+              name="last_name"
+              value={formData.last_name}
+              onChange={handleChange}
+              placeholder="Doe"
               required
             />
 
