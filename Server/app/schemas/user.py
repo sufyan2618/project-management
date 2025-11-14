@@ -6,15 +6,13 @@ from datetime import datetime
 
 class UserRegister(BaseModel):
     email: EmailStr
+    first_name: str = Field(max_length=50)
+    last_name: str = Field(max_length=50)
     password: str = Field(
         max_length=100,
         description="Password must contain uppercase, lowercase, number, and special character"
     )
-    full_name: Optional[str] = Field(
-        min_length=3,
-        max_length=100,
-        description="The full name of the user"
-    )
+    
     
     @field_validator('password')
     @classmethod
@@ -50,7 +48,8 @@ class UserResponse(BaseModel):
 
     id: int
     email: EmailStr
-    full_name: Optional[str] = None
+    first_name: str
+    last_name: str
     role: str
     created_at: datetime
 
