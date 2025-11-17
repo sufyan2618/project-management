@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     MAIL_PORT: int = 587
     CELERY_BROKER_URL: str = "redis://127.0.0.1:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://127.0.0.1:6379/0"
+    BREVO_API_KEY: Optional[str] = None
+    BREVO_SENDER_EMAIL: Optional[str] = None
 
     class Config:
         env_file = ".env"

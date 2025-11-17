@@ -51,9 +51,7 @@ const ResetPassword = () => {
       );
 
       if (response.data.success) {
-        navigate('/login', {
-          state: { message: 'Password reset successfully! Please login with your new password.' }
-        });
+        navigate('/login');
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to reset password. Please try again.');

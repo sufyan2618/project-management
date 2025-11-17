@@ -12,13 +12,25 @@ from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate, TaskListRespo
 from app.core.logger import get_logger
 from typing import List, Optional
 import math
+from pathlib import Path
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+
+
+TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "email"
+
+# Setup Jinja2 environment
+env = Environment(
+    loader=FileSystemLoader(searchpath=str(TEMPLATES_DIR)),
+    autoescape=select_autoescape(['html', 'xml'])
+)
+
 
 router = APIRouter(prefix="/api/task", tags=["tasks"])
 logger = get_logger(__name__)
 @router.post("/", response_model=TaskResponse)
 def create_task(
     task: TaskCreate,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
@@ -42,11 +54,16 @@ def create_task(
 
     logger.info(f"Task {new_task.id} created and assigned to user {user.id}")
 
-    background_tasks.add_task(
-        EmailService.send_task_assigned_email,
-        email=user.email,
-        user_name=user.full_name,
-        task_name=task.title
+    # Send task assignment email
+    template = env.get_template('task-assigned.html')
+    html = template.render(
+        user_name=user.first_name,
+        task_name=new_task.title
+    )
+    task = EmailService.send_email.delay(
+        to_email=user.email,
+        subject="New Task Assigned",
+        html_content=html
     )
     return new_task
 
@@ -83,6 +100,10 @@ def get_assigned_tasks(
             total_pages=total_pages
         )
     )
+
+
+
+
 
 @router.get("/", response_model=APIResponse[TaskListResponse], response_model_exclude_none=True)
 def list_tasks(
@@ -134,6 +155,8 @@ def list_tasks(
 
 
 
+
+
 @router.get("/{task_id}", response_model=TaskResponse)
 def get_task(
     task_id: int,
@@ -155,10 +178,11 @@ def get_task(
 
 
 
+
+
 @router.patch("/{task_id}", response_model=TaskResponse)
 def update_task(
     task_id: int,
-    background_tasks: BackgroundTasks,
     task_update: TaskUpdate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
@@ -187,15 +211,19 @@ def update_task(
         if project:
             user = db.query(User).filter(User.id == project.created_by).first()
             if user:
-                background_tasks.add_task(
-                    EmailService.send_task_status_update_email,
-                    email=user.email,
-                    user_name=user.full_name,
+                template = env.get_template('task-status-update.html')
+                html = template.render(
+                    user_name=user.first_name,
                     task_name=task.title,
                     previous_status=old_status,
                     new_status=task_update.status,
                     task_id=task.id,
                     timestamp=timestamp
+                )
+                email_task = EmailService.send_email.delay(
+                    to_email=user.email,
+                    subject="Task Status Updated",
+                    html_content=html
                 )
                 logger.info(f"Email notification queued for project creator {user.email}")
             else:

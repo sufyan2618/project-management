@@ -41,10 +41,10 @@ const Navbar = ({ onMenuClick }) => {
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-white font-medium">
-                {getInitials(user?.full_name)}
+                {getInitials(user?.first_name)}
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
+                <p className="text-sm font-medium text-gray-900">{user?.first_name}</p>
                 <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
               </div>
             </button>

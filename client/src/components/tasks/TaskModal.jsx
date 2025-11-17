@@ -34,6 +34,8 @@ const TaskModal = ({ isOpen, onClose, task = null, projectId = null }) => {
     queryFn: () => authService.getAllUsers(),
   });
 
+  console.log("users data", usersData);
+
   useEffect(() => {
     if (task) {
       setFormData({
@@ -110,7 +112,7 @@ const TaskModal = ({ isOpen, onClose, task = null, projectId = null }) => {
 
   const userOptions = usersData?.data?.map(user => ({
     value: user.id,
-    label: `${user.full_name} (${user.role === 'admin' ? 'Admin' : 'User'}) - ${user.email}`,
+    label: `${user.first_name} (${user.role === 'admin' ? 'Admin' : 'User'}) - ${user.email}`,
   })) || [];
 
   return (

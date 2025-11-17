@@ -9,7 +9,26 @@ from app.core.logger import get_logger
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.user import User
 from app.dependencies import get_current_user
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+
+
+
+TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "email"
+
+# Setup Jinja2 environment
+env = Environment(
+    loader=FileSystemLoader(searchpath=str(TEMPLATES_DIR)),
+    autoescape=select_autoescape(['html', 'xml'])
+)
+
+
+
+
+
+
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 logger = get_logger(__name__)
@@ -26,13 +45,20 @@ async def register_user(user: UserRegister, db: Session = Depends(get_db)):
     hashed_password = hash_password(user.password)
     # Generate and send verification OTP
     otp = EmailService.generate_otp()
-    otp_expiry = datetime.now(datetime.timezone.utc) + timedelta(minutes=5)
-    current_time = datetime.now(datetime.timezone.utc)
-    
-    task = EmailService.send_verification_email.delay(
-        email=user.email,
+    template = env.get_template('email-verification.html')
+    html = template.render(
+        otp=otp,
         first_name=user.first_name,
-        otp=otp
+        email=user.email,
+    )
+
+    otp_expiry = datetime.utcnow() + timedelta(minutes=5)
+    current_time = datetime.utcnow()
+    
+    task = EmailService.send_email.delay(
+        to_email=user.email,
+        subject="Verify your email",
+        html_content=html
     )
 
     new_user = User(
@@ -78,7 +104,7 @@ def verify_otp(email: str, otp: str, db: Session = Depends(get_db)):
         logger.warning(f"OTP verification failed - invalid OTP for email: {email}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OTP")
     
-    if db_user.otp_expiry < datetime.now(datetime.timezone.utc):
+    if db_user.otp_expiry < datetime.utcnow():
         logger.warning(f"OTP verification failed - OTP expired for email: {email}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP has expired")
     
@@ -133,6 +159,9 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         "access_token": access_token,
     }
 
+
+
+
 @router.get("/me", response_model=APIResponse[UserResponse], response_model_exclude_none=True)
 def read_current_user(current_user: User = Depends(get_current_user)):
     logger.info(f"User {current_user.id} fetching their profile")
@@ -142,6 +171,9 @@ def read_current_user(current_user: User = Depends(get_current_user)):
         "data": UserResponse.model_validate(current_user)
     }
 
+
+
+
 @router.get("/users", response_model=APIResponse[list[UserResponse]], response_model_exclude_none=True)
 def get_all_users(
     current_user: User = Depends(get_current_user),
@@ -149,13 +181,16 @@ def get_all_users(
 ):
     logger.info(f"User {current_user.id} fetching all users")
     
-    users = db.query(User).filter(User.is_active == True).all()
+    users = db.query(User).all()
     
     return {
         "success": True,
         "data": [UserResponse.model_validate(user) for user in users],
         "message": "Users fetched successfully"
     }
+
+
+
 
 @router.post("/token")
 async def login_for_swagger(
@@ -187,6 +222,9 @@ async def login_for_swagger(
         "token_type": "bearer"
     }
 
+
+
+
 @router.post("/resend-otp", response_model=APIResponse[None])
 def resend_otp(email: str, db: Session = Depends(get_db)):
     logger.info(f"Resend OTP request for email: {email}")
@@ -204,7 +242,7 @@ def resend_otp(email: str, db: Session = Depends(get_db)):
         }
     
     # Check rate limiting for email sending
-    current_time = datetime.now(datetime.timezone.utc)
+    current_time = datetime.utcnow()
     if db_user.last_email_attempt:
         time_since_last_attempt = (current_time - db_user.last_email_attempt).total_seconds()
         
@@ -230,17 +268,24 @@ def resend_otp(email: str, db: Session = Depends(get_db)):
         )
     
     otp = EmailService.generate_otp()
-    otp_expiry = datetime.now(datetime.timezone.utc) + timedelta(minutes=5)
+    otp_expiry = datetime.utcnow() + timedelta(minutes=5)
     db_user.otp = otp
     db_user.otp_expiry = otp_expiry
     db_user.email_attempts += 1
     db_user.last_email_attempt = current_time
     db.commit()
-    
-    task = EmailService.send_verification_email.delay(
-        email=db_user.email,
+
+    template = env.get_template('email-verification.html')
+    html = template.render(
+        otp=otp,
         first_name=db_user.first_name,
-        otp=otp
+        email=db_user.email,
+    )
+    
+    task = EmailService.send_email.delay(
+        to_email=db_user.email,
+        subject="Email Verification OTP",
+        html_content=html
     )
     
     logger.info(f"OTP resent successfully to email: {email}")
@@ -249,6 +294,9 @@ def resend_otp(email: str, db: Session = Depends(get_db)):
         "success": True,
         "message": "OTP resent successfully"
     }
+
+
+
 
 @router.post("/forgot-password", response_model=APIResponse[None])
 def forgot_password(email: str, db: Session = Depends(get_db)):
@@ -260,7 +308,7 @@ def forgot_password(email: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     # Check rate limiting for email sending
-    current_time = datetime.now(datetime.timezone.utc)
+    current_time = datetime.utcnow()
     if db_user.last_email_attempt:
         time_since_last_attempt = (current_time - db_user.last_email_attempt).total_seconds()
         
@@ -286,17 +334,24 @@ def forgot_password(email: str, db: Session = Depends(get_db)):
         )
     
     otp = EmailService.generate_otp()
-    otp_expiry = datetime.now(datetime.timezone.utc) + timedelta(minutes=10)
+    otp_expiry = datetime.utcnow() + timedelta(minutes=10)
     db_user.otp = otp
     db_user.otp_expiry = otp_expiry
     db_user.email_attempts += 1
     db_user.last_email_attempt = current_time
     db.commit()
-    
-    task = EmailService.send_password_reset_email.delay(
-        email=db_user.email,
+
+    template = env.get_template('password-reset.html')
+    html = template.render(
+        otp=otp,
         first_name=db_user.first_name,
-        otp=otp
+        email=db_user.email,
+    )
+    
+    task = EmailService.send_email.delay(
+        to_email=db_user.email,
+        subject="Password Reset OTP",
+        html_content=html
     )
     
     logger.info(f"Password reset OTP sent successfully to email: {email}")
@@ -305,6 +360,11 @@ def forgot_password(email: str, db: Session = Depends(get_db)):
         "success": True,
         "message": "Password reset OTP sent successfully"
     }
+
+
+
+
+
 @router.post("/reset-password", response_model=APIResponse[None])
 def reset_password(email: str, otp: str, new_password: str, db: Session = Depends(get_db)):
     logger.info(f"Reset password attempt for email: {email}")
@@ -318,7 +378,7 @@ def reset_password(email: str, otp: str, new_password: str, db: Session = Depend
         logger.warning(f"Reset password failed - invalid OTP for email: {email}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OTP")
     
-    if db_user.otp_expiry < datetime.now(datetime.timezone.utc):
+    if db_user.otp_expiry < datetime.utcnow():
         logger.warning(f"Reset password failed - OTP expired for email: {email}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP has expired")
     

@@ -8,10 +8,10 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     title = Column(String, index=True, nullable=False)
     description = Column(String, nullable=True)
-    assigned_to = Column(Integer, ForeignKey("users.id"), nullable=False)
+    assigned_to = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     status = Column(String, default="todo")
     due_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
