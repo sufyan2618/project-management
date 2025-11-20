@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { FiArrowLeft, FiPlus, FiFilter, FiGrid, FiList } from 'react-icons/fi';
 import { projectService } from '../services/projectService';
 import TaskCard from '../components/tasks/TaskCard';
@@ -13,10 +13,13 @@ import Loading from '../components/ui/Loading';
 import EmptyState from '../components/ui/EmptyState';
 import { QUERY_KEYS, TASK_STATUS } from '../utils/constants';
 import { formatDate } from '../utils/helpers';
+import { useSocket } from '../contexts/socketContext';
 
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const socket = useSocket();
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
@@ -26,6 +29,33 @@ const ProjectDetail = () => {
     queryKey: [QUERY_KEYS.PROJECT_DETAIL, id],
     queryFn: () => projectService.getProject(id),
   });
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('task_created', (newTask) => {
+        console.log('New task created:', newTask);
+        
+        // Only update if the task belongs to this project
+        if (newTask.project_id === parseInt(id)) {
+          queryClient.invalidateQueries([QUERY_KEYS.PROJECT_DETAIL, id]);
+        }
+      });
+
+      socket.on('task_updated', (updatedTask) => {
+        console.log('Task updated:', updatedTask);
+        
+        // Only update if the task belongs to this project
+        if (updatedTask.project_id === parseInt(id)) {
+          queryClient.invalidateQueries([QUERY_KEYS.PROJECT_DETAIL, id]);
+        }
+      });
+
+      return () => {
+        socket.off('task_created');
+        socket.off('task_updated');
+      };
+    }
+  }, [socket, id, queryClient]);
 
   const project = data?.data;
   const tasks = project?.tasks || [];

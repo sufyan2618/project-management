@@ -30,6 +30,7 @@ const Login = () => {
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
+      console.log("hello");
       dispatch(setCredentials({
         user: data.data,
         token: data.access_token,

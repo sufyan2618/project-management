@@ -8,6 +8,7 @@ from app.models.user import User
 from app.models.project import Project
 from app.dependencies import get_current_user, RoleChecker
 from app.services.email_service import EmailService
+from app.core.socket import sio
 from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate, TaskListResponse
 from app.core.logger import get_logger
 from typing import List, Optional
@@ -29,7 +30,7 @@ env = Environment(
 router = APIRouter(prefix="/api/task", tags=["tasks"])
 logger = get_logger(__name__)
 @router.post("/", response_model=TaskResponse)
-def create_task(
+async def create_task(
     task: TaskCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
@@ -51,6 +52,19 @@ def create_task(
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
+
+    # Emit socket event to notify all connected clients about the new task
+    await sio.emit('task_created', {
+        'task_id': new_task.id,
+        'title': new_task.title,
+        'description': new_task.description,
+        'project_id': new_task.project_id,
+        'assigned_to': new_task.assigned_to,
+        'status': new_task.status,
+        'due_date': new_task.due_date.isoformat() if new_task.due_date else None,
+        'created_at': new_task.created_at.isoformat(),
+        'updated_at': new_task.updated_at.isoformat()
+    })
 
     logger.info(f"Task {new_task.id} created and assigned to user {user.id}")
 
@@ -181,7 +195,7 @@ def get_task(
 
 
 @router.patch("/{task_id}", response_model=TaskResponse)
-def update_task(
+async def update_task(
     task_id: int,
     task_update: TaskUpdate,
     db: Session = Depends(get_db),
@@ -202,6 +216,18 @@ def update_task(
 
     db.commit()
     db.refresh(task)
+
+    # Emit socket event to notify all connected clients about the task update
+    await sio.emit('task_updated', {
+        'task_id': task.id,
+        'title': task.title,
+        'description': task.description,
+        'project_id': task.project_id,
+        'assigned_to': task.assigned_to,
+        'status': task.status,
+        'due_date': task.due_date.isoformat() if task.due_date else None,
+        'updated_at': task.updated_at.isoformat()
+    })
 
     timestamp = datetime.now().strftime("%B %d, %Y at %I:%M %p")
 

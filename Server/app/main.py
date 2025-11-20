@@ -2,11 +2,13 @@ from fastapi import FastAPI
 from app.routers import auth, projects, task
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-
+import socketio
+from app.core.socket import sio
 
 
 
 app = FastAPI()
+socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
 #apply cors middleware for frontend route
 
